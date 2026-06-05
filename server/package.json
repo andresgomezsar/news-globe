@@ -1,0 +1,21 @@
+{
+  "name": "news-globe-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node --watch index.js",
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@remotion/bundler": "4.0.416",
+    "@remotion/install-whisper-cpp": "4.0.416",
+    "@remotion/renderer": "4.0.416",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "node-cron": "^3.0.3",
+    "openai": "^4.77.0"
+  }
+}

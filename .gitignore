@@ -1,0 +1,14 @@
+node_modules
+.env
+dist
+.DS_Store
+server/public/output/*
+!server/public/output/.gitkeep
+remotion/public/renders/*
+!remotion/public/renders/.gitkeep
+*.log
+.whisper
+
+server/schedules.json
+
+server/history.json

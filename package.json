@@ -1,0 +1,22 @@
+{
+  "name": "news-globe",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "News Globe — point at the planet, generate a custom AI news podcast with GPT voices and Remotion animation.",
+  "workspaces": [
+    "server",
+    "web",
+    "remotion"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,web -c green,cyan \"npm:dev:server\" \"npm:dev:web\"",
+    "dev:server": "npm -w server run dev",
+    "dev:web": "npm -w web run dev",
+    "studio": "npm -w remotion run studio",
+    "build": "npm -w web run build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
