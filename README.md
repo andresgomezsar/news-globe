@@ -1,6 +1,15 @@
 # 🌍 News Globe
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-37e6c9.svg)](LICENSE)
+
 **Point at the planet → get a custom AI news podcast, rendered as an animated broadcast.**
+
+<p align="center">
+  <img src="docs/ui.png" alt="News Globe control panel" width="290" />
+  &nbsp;&nbsp;
+  <img src="docs/screenshot.png" alt="A generated briefing" width="305" />
+</p>
+<p align="center"><em>The control panel (left) and a frame from a generated briefing (right).</em></p>
 
 Click anywhere on an interactive 3D globe, choose your topics, pick a GPT voice, and News Globe will:
 
@@ -102,3 +111,7 @@ Every finished briefing (manual or scheduled) is saved to a **Library** — open
 - Rendered MP4s land in `server/public/output/` and are served at `/output/<id>.mp4`.
 - Per-job audio + caption assets live in `remotion/public/renders/<id>/`.
 - Voices: `alloy, ash, ballad, coral, echo, fable, onyx, nova, sage, shimmer, verse`.
+
+## License
+
+[MIT](LICENSE) © 2026 Andres Gomez Sarmiento
