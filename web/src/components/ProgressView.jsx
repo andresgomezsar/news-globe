@@ -5,6 +5,7 @@ const ALL_STAGES = [
   { id: "script", label: "Writing the script", icon: "✍️" },
   { id: "voice", label: "Generating the voice", icon: "🎙️" },
   { id: "captions", label: "Captions + intelligence", icon: "💬" },
+  { id: "director", label: "Visual director", icon: "🎞️" },
   { id: "render", label: "Rendering the broadcast", icon: "🎬" },
   { id: "upload", label: "Publishing to social", icon: "🚀" },
 ];

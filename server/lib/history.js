@@ -38,6 +38,7 @@ function toRecord(r) {
     keyPlayers: (r.keyPlayers || []).slice(0, 8),
     summary: r.summary || "",
     headlines: (r.headlines || []).slice(0, 8),
+    cues: (r.cues || []).slice(0, 12),
     script: r.script || "",
     upload: r.upload || null,
     createdAt: r.createdAt || new Date().toISOString(),

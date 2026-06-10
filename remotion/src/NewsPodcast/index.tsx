@@ -14,6 +14,7 @@ import { Globe } from "./Globe";
 import { Captions } from "./Captions";
 import { Waveform } from "./Waveform";
 import { Ticker } from "./Ticker";
+import { Cues } from "./Cues";
 import { KeyPlayers } from "./KeyPlayers";
 import { SummaryCard } from "./SummaryCard";
 import { DisplayFont, SansFont, loadBoldFont } from "./fonts";
@@ -153,7 +154,7 @@ const IntroCard: React.FC<{ title: string; subtitle: string; accent: string }> =
 };
 
 export const NewsPodcast: React.FC<NewsPodcastProps> = (props) => {
-  const { accent, location, topics, headlines, keyPlayers, summary, audioSrc, captions, title, subtitle } = props;
+  const { accent, location, topics, headlines, keyPlayers, summary, audioSrc, captions, cues, title, subtitle } = props;
   const { width, fps, durationInFrames } = useVideoConfig();
   const summaryFrames = Math.min(Math.round(fps * 4.5), Math.round(durationInFrames * 0.3));
 
@@ -192,6 +193,7 @@ export const NewsPodcast: React.FC<NewsPodcastProps> = (props) => {
       <Header title={title} subtitle={subtitle} topics={topics} accent={accent} />
       <KeyPlayers players={keyPlayers} accent={accent} />
       <Ticker headlines={headlines} accent={accent} />
+      <Cues cues={cues} accent={accent} />
       <Captions captions={captions} accent={accent} />
 
       <Sequence durationInFrames={72}>

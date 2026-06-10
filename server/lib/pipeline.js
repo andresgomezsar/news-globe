@@ -6,6 +6,8 @@ import { editorReview } from "./editor.js";
 import { writeScript } from "./script.js";
 import { synthesizeVoice } from "./tts.js";
 import { generateCaptions } from "./captions.js";
+import { downloadStoryImages } from "./images.js";
+import { directCues } from "./director.js";
 import { probeDurationSeconds, extractPoster } from "./media.js";
 import { renderPodcast } from "./render.js";
 import { uploadVideo, buildCaption, uploadConfigured } from "./upload.js";
@@ -98,6 +100,11 @@ export async function runPipeline({
     log("No stories cleared the relevance bar — writing an on-topic general briefing");
   }
 
+  // Kept stories that ranked below the first enrichment pass still need their
+  // article read (body text + lead image for the visual director).
+  const unread = stories.filter((s) => !s.enriched);
+  if (unread.length) await enrichWithContent(unread, unread.length);
+
   // 2. SCRIPT
   emit("stage", "script", { label: "Writing the script" });
   const { title, subtitle, script } = await writeScript({
@@ -134,11 +141,27 @@ export async function runPipeline({
     );
   }
 
-  // Spread the editor's ranked stories across the timeline for the lower-third ticker.
+  // 5. VISUAL DIRECTION — download story art, then plan the on-screen cue timeline
+  emit("stage", "director", { label: "Visual director planning shots" });
+  const assets = await downloadStoryImages({ stories, renderDir, id, log });
+  if (!assets.length) log("No usable story images — text cues only");
+  const { cues, anchors, method: directorMethod } = await directCues({
+    script,
+    stories,
+    assets,
+    captions,
+    durationSeconds: realDuration,
+    captionMethod: method,
+    log,
+  });
+  log(`Cue timeline: ${cues.length} cue${cues.length === 1 ? "" : "s"} via ${directorMethod}`);
+
+  // Ticker headlines land when their story is actually narrated (director's
+  // anchors), falling back to an even spread across the timeline.
   const tickerHeadlines = stories.slice(0, 6).map((h, i, arr) => ({
     source: h.source,
     title: h.title,
-    atSeconds: arr.length > 1 ? (i / arr.length) * realDuration + 1.5 : 1.5,
+    atSeconds: anchors[i] ?? (arr.length > 1 ? (i / arr.length) * realDuration + 1.5 : 1.5),
   }));
 
   // Top "key players" — detected entities, most informative labels first.
@@ -166,9 +189,10 @@ export async function runPipeline({
     audioSrc: `http://127.0.0.1:${PORT}/renders/${id}/audio.mp3`,
     durationInSeconds: realDuration + 1.2,
     captions,
+    cues,
   };
 
-  // 5. RENDER
+  // 6. RENDER
   emit("stage", "render", { label: "Rendering the broadcast" });
   const { publicPath, outputLocation } = await renderPodcast({ id, inputProps, log });
   log("Render complete");
@@ -178,7 +202,7 @@ export async function runPipeline({
   const poster = await extractPoster(outputLocation, posterPath, Math.max(3, Math.min(realDuration * 0.4, realDuration - 1)));
   const posterUrl = poster ? `/output/${id}.jpg` : null;
 
-  // 6. PUBLISH (optional)
+  // 7. PUBLISH (optional)
   let uploadResult = null;
   if (autoUpload) {
     emit("stage", "upload", { label: "Publishing to social" });
@@ -228,6 +252,8 @@ export async function runPipeline({
     captionMethod: method,
     durationSeconds: realDuration,
     accent,
+    cues,
+    imagesDownloaded: assets.length,
     upload: uploadResult,
   };
   emit("done", "Your briefing is ready", result);

@@ -5,6 +5,7 @@
 import { NEWS_SOURCES } from "./config.js";
 import { decodeEntities, stripTags, cleanTitle, titleKey } from "./text.js";
 import { fetchGoogleNews, searchGoogleNews } from "./sources/googleNews.js";
+import { resolveGoogleNewsUrl, isGoogleNewsUrl } from "./sources/googleNewsDecode.js";
 import { fetchOutlets } from "./sources/outlets.js";
 
 const GDELT = "https://api.gdeltproject.org/api/v2/doc/doc";
@@ -128,7 +129,7 @@ export async function searchMore(queries, seenTitles = new Set(), perQuery = 10)
   return out;
 }
 
-// ── Article body extraction (fills/upgrades excerpts) ──
+// ── Article body extraction (fills/upgrades excerpts + grabs the lead image) ──
 async function fetchArticleText(url, timeoutMs = 7000) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
@@ -138,8 +139,8 @@ async function fetchArticleText(url, timeoutMs = 7000) {
       redirect: "follow",
       headers: { "User-Agent": "Mozilla/5.0 (compatible; news-globe/1.0)", Accept: "text/html" },
     });
-    if (!res.ok) return "";
-    if (!(res.headers.get("content-type") || "").includes("html")) return "";
+    if (!res.ok) return { text: "", image: "" };
+    if (!(res.headers.get("content-type") || "").includes("html")) return { text: "", image: "" };
 
     let html = await res.text();
     html = html.replace(/<(script|style|noscript|svg)[\s\S]*?<\/\1>/gi, " ");
@@ -148,6 +149,17 @@ async function fetchArticleText(url, timeoutMs = 7000) {
       html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i) ||
       html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i);
     const meta = metaMatch ? decodeEntities(metaMatch[1]).trim() : "";
+
+    const imgMatch =
+      html.match(/<meta[^>]+property=["']og:image(?::secure_url)?["'][^>]+content=["']([^"']+)["']/i) ||
+      html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i) ||
+      html.match(/<meta[^>]+name=["']twitter:image(?::src)?["'][^>]+content=["']([^"']+)["']/i);
+    let image = imgMatch ? decodeEntities(imgMatch[1]).trim() : "";
+    try {
+      image = image ? new URL(image, url).href : "";
+    } catch {
+      image = "";
+    }
 
     const paras = [...html.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)]
       .map((m) => stripTags(m[1]))
@@ -158,9 +170,10 @@ async function fetchArticleText(url, timeoutMs = 7000) {
       if (body.length > 1100) break;
       body += (body ? " " : "") + p;
     }
-    return [meta, body].filter(Boolean).join(" ").slice(0, 1200).trim();
+    const text = [meta, body].filter(Boolean).join(" ").slice(0, 1200).trim();
+    return { text, image };
   } catch {
-    return "";
+    return { text: "", image: "" };
   } finally {
     clearTimeout(timer);
   }
@@ -169,11 +182,24 @@ async function fetchArticleText(url, timeoutMs = 7000) {
 /** Fetch readable bodies in parallel, keeping the richer of fetched vs existing excerpt. */
 export async function enrichWithContent(headlines, max = 6) {
   const targets = headlines.slice(0, max);
+
+  // Google News links are JS interstitials — swap in the real publisher URL
+  // first so body extraction and og:image read the actual article.
+  await Promise.allSettled(
+    targets.map(async (h) => {
+      if (!isGoogleNewsUrl(h.url)) return;
+      const real = await resolveGoogleNewsUrl(h.url);
+      if (real) h.url = real;
+    }),
+  );
+
   const results = await Promise.allSettled(targets.map((h) => fetchArticleText(h.url)));
   results.forEach((r, i) => {
-    const fetched = r.status === "fulfilled" ? r.value : "";
+    const fetched = r.status === "fulfilled" ? r.value : { text: "", image: "" };
     const existing = targets[i].excerpt || "";
-    targets[i].excerpt = fetched.length > existing.length ? fetched : existing;
+    targets[i].excerpt = fetched.text.length > existing.length ? fetched.text : existing;
+    targets[i].imageUrl = fetched.image || targets[i].imageUrl || "";
+    targets[i].enriched = true;
   });
   return headlines;
 }

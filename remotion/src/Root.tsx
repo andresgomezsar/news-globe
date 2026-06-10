@@ -19,6 +19,10 @@ const defaultProps: NewsPodcastProps = {
   audioSrc: "",
   durationInSeconds: 36,
   captions: [],
+  cues: [
+    { type: "stat", atSeconds: 4, durationSeconds: 4, storyIndex: 0, value: "+14%", text: "Chip sector gain this quarter", credit: "Reuters" },
+    { type: "quote", atSeconds: 10, durationSeconds: 4.5, storyIndex: 1, text: "The framework opens robotics exports to twelve new markets", credit: "NHK" },
+  ],
 };
 
 export const RemotionRoot: React.FC = () => {

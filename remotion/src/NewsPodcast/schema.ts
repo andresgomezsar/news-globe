@@ -15,6 +15,22 @@ export const headlineSchema = z.object({
   atSeconds: z.number().optional(),
 });
 
+export const cueSchema = z.object({
+  type: z.enum(["image", "quote", "stat"]),
+  /** Seconds into the podcast where this cue appears. */
+  atSeconds: z.number(),
+  durationSeconds: z.number(),
+  storyIndex: z.number().optional(),
+  /** Locally-served image URL (image cues only). */
+  src: z.string().optional(),
+  /** Source attribution, e.g. "Reuters". */
+  credit: z.string().optional(),
+  /** Quote body, or the caption under a stat. */
+  text: z.string().optional(),
+  /** Stat figure, e.g. "$3.2B". */
+  value: z.string().optional(),
+});
+
 export const locationSchema = z.object({
   name: z.string(),
   country: z.string().optional().default(""),
@@ -34,9 +50,11 @@ export const newsPodcastSchema = z.object({
   audioSrc: z.string(),
   durationInSeconds: z.number().default(60),
   captions: z.array(captionSchema).default([]),
+  cues: z.array(cueSchema).default([]),
 });
 
 export type NewsPodcastProps = z.infer<typeof newsPodcastSchema>;
 export type Caption = z.infer<typeof captionSchema>;
 export type Headline = z.infer<typeof headlineSchema>;
 export type GeoLocation = z.infer<typeof locationSchema>;
+export type Cue = z.infer<typeof cueSchema>;

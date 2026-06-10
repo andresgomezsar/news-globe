@@ -28,6 +28,23 @@ export async function probeDurationSeconds(file) {
   }
 }
 
+/** Probe image dimensions via ffprobe. Returns { width, height } or null if unavailable. */
+export async function probeImageSize(file) {
+  try {
+    const out = await run("ffprobe", [
+      "-v", "error",
+      "-select_streams", "v:0",
+      "-show_entries", "stream=width,height",
+      "-of", "csv=s=x:p=0",
+      file,
+    ]);
+    const [w, h] = out.trim().split("x").map(Number);
+    return Number.isFinite(w) && Number.isFinite(h) ? { width: w, height: h } : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Convert any audio to 16kHz mono wav (what whisper.cpp needs). Returns wav path or null. */
 export async function toWav16k(input, output) {
   try {
