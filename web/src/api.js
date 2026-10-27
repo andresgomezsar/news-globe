@@ -1,3 +1,12 @@
+async function apiFetch(url, options) {
+  const response = await fetch(url, options);
+  if (response.status === 401) {
+    window.dispatchEvent(new Event("session-expired"));
+    throw new Error("Your session expired. Sign in again.");
+  }
+  return response;
+}
+
 export async function reverseGeocode(lat, lng) {
   try {
     const res = await fetch(
@@ -13,7 +22,7 @@ export async function reverseGeocode(lat, lng) {
 
 export async function listBriefings() {
   try {
-    const res = await fetch("/api/briefings");
+    const res = await apiFetch("/api/briefings");
     const d = await res.json();
     return d.briefings || [];
   } catch {
@@ -22,12 +31,12 @@ export async function listBriefings() {
 }
 
 export async function deleteBriefing(id) {
-  await fetch(`/api/briefings/${id}`, { method: "DELETE" });
+  await apiFetch(`/api/briefings/${id}`, { method: "DELETE" });
 }
 
 export async function getConfig() {
   try {
-    const res = await fetch("/api/config");
+    const res = await apiFetch("/api/config");
     return await res.json();
   } catch {
     return { uploadConfigured: false, platforms: ["tiktok"] };
@@ -36,7 +45,7 @@ export async function getConfig() {
 
 export async function listSchedules() {
   try {
-    const res = await fetch("/api/schedules");
+    const res = await apiFetch("/api/schedules");
     const d = await res.json();
     return d.schedules || [];
   } catch {
@@ -45,7 +54,7 @@ export async function listSchedules() {
 }
 
 export async function createSchedule(payload) {
-  const res = await fetch("/api/schedules", {
+  const res = await apiFetch("/api/schedules", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -58,11 +67,11 @@ export async function createSchedule(payload) {
 }
 
 export async function deleteSchedule(id) {
-  await fetch(`/api/schedules/${id}`, { method: "DELETE" });
+  await apiFetch(`/api/schedules/${id}`, { method: "DELETE" });
 }
 
 export async function runSchedule(id) {
-  await fetch(`/api/schedules/${id}/run`, { method: "POST" });
+  await apiFetch(`/api/schedules/${id}/run`, { method: "POST" });
 }
 
 // Free, keyless forward geocoding (city or country) via Open-Meteo.
@@ -88,7 +97,7 @@ export async function geocodeSearch(query) {
 
 export async function getVoices() {
   try {
-    const res = await fetch("/api/voices");
+    const res = await apiFetch("/api/voices");
     const d = await res.json();
     return d.voices || [];
   } catch {
@@ -97,7 +106,7 @@ export async function getVoices() {
 }
 
 export async function createJob(payload) {
-  const res = await fetch("/api/jobs", {
+  const res = await apiFetch("/api/jobs", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -119,6 +128,9 @@ export function streamJob(jobId, onEvent) {
       /* ignore malformed */
     }
   };
-  es.onerror = () => es.close();
+  es.onerror = () => {
+    es.close();
+    apiFetch("/api/session").catch(() => {});
+  };
   return () => es.close();
 }

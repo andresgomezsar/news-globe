@@ -1,10 +1,11 @@
+import { safeFetch } from "./safe-fetch.js";
 // Story image fetcher. Downloads each story's article image into the job's render
 // dir (served to Remotion over the same local static route as the audio) and
 // validates it so a broken/garbage image can never take down a render.
 
 import fs from "node:fs/promises";
 import path from "node:path";
-import { PORT } from "./config.js";
+import { PORT, RENDER_TOKEN } from "./config.js";
 import { probeImageSize } from "./media.js";
 
 const MAX_BYTES = 8 * 1024 * 1024;
@@ -30,7 +31,7 @@ async function downloadOne(story, storyIndex, renderDir, id) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 8000);
   try {
-    const res = await fetch(story.imageUrl, {
+    const res = await safeFetch(story.imageUrl, {
       signal: ctrl.signal,
       redirect: "follow",
       headers: { "User-Agent": "Mozilla/5.0 (compatible; news-globe/1.0)", Accept: "image/*" },
@@ -59,7 +60,7 @@ async function downloadOne(story, storyIndex, renderDir, id) {
 
     return {
       storyIndex,
-      src: `http://127.0.0.1:${PORT}/renders/${id}/story-${storyIndex}.${ext}`,
+      src: `http://127.0.0.1:${PORT}/renders/${id}/story-${storyIndex}.${ext}?token=${RENDER_TOKEN}`,
       credit: story.source || "wire",
       width: dims?.width,
       height: dims?.height,

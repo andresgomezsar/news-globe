@@ -466,3 +466,9 @@ html, body, #root {
   .sidebar { width: 100%; padding: 12px; align-items: flex-end; }
   .panel { min-height: auto; }
 }
+
+.session-screen { min-height: 100dvh; display: grid; place-items: center; padding: 24px; }
+.session-panel { max-width: 420px; min-height: auto; align-self: center; }
+.session-panel .search-input { padding-left: 14px; }
+.session-panel [role="alert"] { color: #ff9aa6; }
+.session-logout { position: fixed; left: 16px; top: 16px; z-index: 30; }

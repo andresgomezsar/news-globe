@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
@@ -16,6 +17,16 @@ export const OUTPUT_DIR = path.join(SERVER_DIR, "public", "output");
 dotenv.config({ path: path.join(ROOT, ".env") });
 
 export const PORT = Number(process.env.PORT || 5174);
+export const HOST = process.env.HOST || "127.0.0.1";
+export const RENDER_TOKEN = crypto.randomBytes(32).toString("hex");
+export const SECURITY = {
+  accessToken: process.env.NEWS_GLOBE_TOKEN,
+  allowedOrigins: (process.env.ALLOWED_ORIGINS || `http://localhost:5173,http://127.0.0.1:5173,http://localhost:${PORT},http://127.0.0.1:${PORT}`).split(",").map(s => s.trim()),
+  secureCookie: process.env.COOKIE_SECURE === "true",
+  publishingEnabled: process.env.ENABLE_PUBLISHING === "true",
+  renderToken: RENDER_TOKEN,
+  defaultTimezone: process.env.TIMEZONE || "America/Los_Angeles",
+};
 export const SCRIPT_MODEL = process.env.SCRIPT_MODEL || "gpt-4o-mini";
 export const TTS_MODEL = process.env.TTS_MODEL || "gpt-4o-mini-tts";
 export const DEEPGRAM_API_KEY = process.env.DEEPGRAM_API_KEY || "";

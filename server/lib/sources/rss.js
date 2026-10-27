@@ -1,3 +1,4 @@
+import { safeFetch } from "../safe-fetch.js";
 import { decodeEntities, stripTags } from "../text.js";
 
 // Minimal, dependency-free RSS 2.0 + Atom parser. Good enough for news feeds.
@@ -48,7 +49,7 @@ export async function fetchFeed(url, timeoutMs = 7000) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
-    const res = await fetch(url, {
+    const res = await safeFetch(url, {
       signal: ctrl.signal,
       redirect: "follow",
       headers: { "User-Agent": "Mozilla/5.0 (compatible; news-globe/1.0)", Accept: "application/rss+xml, application/xml, text/xml, */*" },

@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { RENDERS_DIR, OUTPUT_DIR, PORT } from "./config.js";
+import { RENDERS_DIR, OUTPUT_DIR, PORT, RENDER_TOKEN } from "./config.js";
 import { fetchHeadlines, enrichWithContent, searchMore } from "./news.js";
 import { editorReview } from "./editor.js";
 import { writeScript } from "./script.js";
@@ -186,7 +186,7 @@ export async function runPipeline({
     headlines: tickerHeadlines,
     keyPlayers,
     summary: intelligence?.summary || "",
-    audioSrc: `http://127.0.0.1:${PORT}/renders/${id}/audio.mp3`,
+    audioSrc: `http://127.0.0.1:${PORT}/renders/${id}/audio.mp3?token=${RENDER_TOKEN}`,
     durationInSeconds: realDuration + 1.2,
     captions,
     cues,

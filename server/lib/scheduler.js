@@ -1,3 +1,4 @@
+import { validateSchedule, validateJob } from "./validation.js";
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import cron from "node-cron";
@@ -42,7 +43,14 @@ export class Scheduler {
     } catch {
       this.schedules = [];
     }
-    for (const s of this.schedules) if (s.enabled) this.register(s);
+    if (!Array.isArray(this.schedules)) this.schedules = [];
+    this.schedules = this.schedules.filter(s => {
+      try { validateJob(s); return true; }
+      catch (e) { console.warn("Skipping invalid stored schedule:", e.message); return false; }
+    });
+    for (const s of this.schedules) if (s.enabled) {
+      try { this.register(s); } catch (e) { console.warn("Invalid stored schedule:", e.message); }
+    }
     console.log(`🕒  Scheduler: ${this.schedules.length} schedule(s), ${this.tasks.size} active`);
   }
 
@@ -61,7 +69,7 @@ export class Scheduler {
     }
     const task = cron.schedule(
       spec.cron,
-      () => this.fire(spec.id),
+      () => this.fire(spec.id).catch(e => console.error("Schedule failed:", e.message)),
       { timezone: spec.timezone || TIMEZONE },
     );
     this.tasks.set(spec.id, task);
@@ -86,7 +94,7 @@ export class Scheduler {
   }
 
   async create(input) {
-    if (!input.location || typeof input.location.lat !== "number") throw new Error("location with lat/lng required");
+    input = validateSchedule(input, TIMEZONE);
 
     const freq = input.freq || "daily";
     const time = input.time || "08:00";

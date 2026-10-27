@@ -45,7 +45,10 @@ The browser drives a job over Server-Sent Events, watching each stage live.
 cd "news_agent"
 npm install            # installs all three workspaces
 
-# .env already holds your OPENAI_API_KEY + DEEPGRAM_API_KEY (copied from content-automation).
+cp .env.example .env
+# Set OPENAI_API_KEY, optional provider keys, and NEWS_GLOBE_TOKEN in .env.
+# Generate a random sign-in token:
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 # Optional, for precise audio duration: brew install ffmpeg
 ```
 
@@ -59,7 +62,15 @@ npm install            # installs all three workspaces
 npm run dev      # starts the API (:5174) and the web UI (:5173)
 ```
 
-Open **http://localhost:5173**, click the globe, pick topics + a voice, and hit **Generate Briefing**.
+Open **http://localhost:5173** and sign in with `NEWS_GLOBE_TOKEN`. Then click the globe, pick topics + a voice, and hit **Generate Briefing**.
+
+The API binds to `127.0.0.1` by default and requires an operator session for jobs, schedules, history, SSE and output media. Sessions last 12 hours and are stored in an HttpOnly, SameSite=Strict cookie; the access token is never bundled into the client. Restarting with a different token invalidates existing sessions. At most two generation jobs run at once.
+
+Publishing is disabled by default. To opt in, set `ENABLE_PUBLISHING=true` together with `UPLOAD_POST_API_KEY` and `UPLOAD_POST_USER`; every signed-in operator then has publication permission. Stored schedules are also subject to this setting when they run. Keep the token private and do not share it with demo visitors.
+
+For remote hosting, terminate TLS, set `COOKIE_SECURE=true`, set `ALLOWED_ORIGINS` to the exact HTTPS UI origin, and explicitly configure `HOST` for your reverse proxy. Proxy `/api` and `/output` on the same origin as the UI. `/renders` uses an independent per-process capability for Remotion and must not be exposed as an unauthenticated file directory. Public news fetches reject non-public IPs, non-HTTP(S) schemes, URL credentials and nonstandard ports, pin DNS results and recheck redirects. Responses are bounded to 8 MB and 10 seconds; rejected sources retain the existing best-effort fallback behavior.
+
+Run security regression tests with `npm -w server test` and build the UI with `npm run build`.
 
 ### Other commands
 
@@ -97,7 +108,7 @@ Toggle them via `NEWS_SOURCES`. Adding a source = drop a `fetchX({location, topi
 
 The **Automate** section in the UI (and the `/api/schedules` routes) lets you:
 
-- **Auto-publish** a render to social via Upload-Post — toggle it on and pick platforms. (Requires `UPLOAD_POST_USER`; the API key is already in `.env`. Uploads are flagged `is_aigc` since they're AI-generated.)
+- **Auto-publish** a render to social via Upload-Post — toggle it on and pick platforms. (Requires `ENABLE_PUBLISHING=true`, `UPLOAD_POST_USER`, and `UPLOAD_POST_API_KEY` in `.env`. Uploads are flagged `is_aigc` since they're AI-generated.)
 - **Schedule recurring briefings** with cron — Daily / Weekdays / Hourly at a chosen time. Schedules persist to `server/schedules.json`, re-register on server boot, and each run reuses the exact same pipeline (and can auto-publish).
 - **Publish exactly at the chosen time.** When a schedule has auto-publish on, the cron fires a lead time (~15 min) *before* the target so generation finishes in time, then hands Upload-Post a `scheduled_date` equal to the target instant — so the post goes live precisely at the selected time, not whenever the render happens to finish. (Without auto-publish, the cron simply fires at the chosen time to generate.)
 

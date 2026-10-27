@@ -1,7 +1,8 @@
 import fs from "node:fs/promises";
 import { openai, TTS_MODEL } from "./config.js";
 
-export const VOICES = ["alloy", "ash", "ballad", "coral", "echo", "fable", "onyx", "nova", "sage", "shimmer", "verse"];
+import { VOICES } from "./validation.js";
+export { VOICES };
 
 /**
  * Synthesize the script to an mp3 with OpenAI TTS.

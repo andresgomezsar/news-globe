@@ -1,3 +1,4 @@
+import { safeFetch } from "./safe-fetch.js";
 // Multi-source news aggregator. Each source returns a normalized article:
 //   { title, source, url, excerpt, publishedAt, origin }
 // Sources run in parallel, are merged + deduped, then the editor agent ranks them.
@@ -13,7 +14,7 @@ const GDELT = "https://api.gdeltproject.org/api/v2/doc/doc";
 // ── GDELT source ──
 async function gdeltQuery(query, maxrecords = 20) {
   const url = `${GDELT}?query=${encodeURIComponent(query)}&mode=ArtList&format=json&sort=DateDesc&maxrecords=${maxrecords}`;
-  const res = await fetch(url, { headers: { "User-Agent": "news-globe/1.0 (+local)" } });
+  const res = await safeFetch(url, { headers: { "User-Agent": "news-globe/1.0 (+local)" } });
   const text = await res.text();
   if (!text.trim().startsWith("{")) throw new Error(`GDELT rejected query: ${text.slice(0, 120)}`);
   const data = JSON.parse(text);
@@ -134,7 +135,7 @@ async function fetchArticleText(url, timeoutMs = 7000) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
-    const res = await fetch(url, {
+    const res = await safeFetch(url, {
       signal: ctrl.signal,
       redirect: "follow",
       headers: { "User-Agent": "Mozilla/5.0 (compatible; news-globe/1.0)", Accept: "text/html" },
@@ -156,7 +157,7 @@ async function fetchArticleText(url, timeoutMs = 7000) {
       html.match(/<meta[^>]+name=["']twitter:image(?::src)?["'][^>]+content=["']([^"']+)["']/i);
     let image = imgMatch ? decodeEntities(imgMatch[1]).trim() : "";
     try {
-      image = image ? new URL(image, url).href : "";
+      image = image ? new URL(image, res.url).href : "";
     } catch {
       image = "";
     }

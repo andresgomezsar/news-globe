@@ -48,7 +48,7 @@ export default function AutomatePanel({
           <div className="toggle-sub">
             {config.uploadConfigured
               ? "Post the render via Upload-Post"
-              : "Set UPLOAD_POST_USER in .env to enable"}
+              : "Publishing is disabled or not configured"}
           </div>
         </div>
         <button

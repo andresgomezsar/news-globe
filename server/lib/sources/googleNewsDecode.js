@@ -1,3 +1,4 @@
+import { safeFetch } from "../safe-fetch.js";
 // Google News RSS links point at news.google.com/rss/articles/<opaque-id> —
 // a JS interstitial, not the article. That breaks body extraction and og:image
 // for every googlenews story. This resolves the real publisher URL via Google's
@@ -13,7 +14,7 @@ async function fetchWithTimeout(url, init = {}, timeoutMs = 6000) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
-    return await fetch(url, { ...init, signal: ctrl.signal });
+    return await safeFetch(url, { ...init, signal: ctrl.signal });
   } finally {
     clearTimeout(timer);
   }

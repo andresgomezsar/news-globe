@@ -4,30 +4,30 @@ import { cleanTitle } from "../text.js";
 // Curated keyless RSS feeds, tagged by topic so we only pull what's relevant.
 const FEEDS = [
   // World / general
-  { outlet: "BBC", topics: ["world", "politics"], url: "http://feeds.bbci.co.uk/news/world/rss.xml" },
+  { outlet: "BBC", topics: ["world", "politics"], url: "https://feeds.bbci.co.uk/news/world/rss.xml" },
   { outlet: "The Guardian", topics: ["world", "politics"], url: "https://www.theguardian.com/world/rss" },
   { outlet: "NYT", topics: ["world", "politics"], url: "https://rss.nytimes.com/services/xml/rss/nyt/World.xml" },
   { outlet: "Al Jazeera", topics: ["world", "politics"], url: "https://www.aljazeera.com/xml/rss/all.xml" },
   { outlet: "NPR", topics: ["world", "politics"], url: "https://feeds.npr.org/1001/rss.xml" },
   // Technology
-  { outlet: "BBC", topics: ["technology"], url: "http://feeds.bbci.co.uk/news/technology/rss.xml" },
+  { outlet: "BBC", topics: ["technology"], url: "https://feeds.bbci.co.uk/news/technology/rss.xml" },
   { outlet: "The Guardian", topics: ["technology"], url: "https://www.theguardian.com/technology/rss" },
   { outlet: "NYT", topics: ["technology"], url: "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml" },
   // Markets / business
-  { outlet: "BBC", topics: ["markets"], url: "http://feeds.bbci.co.uk/news/business/rss.xml" },
+  { outlet: "BBC", topics: ["markets"], url: "https://feeds.bbci.co.uk/news/business/rss.xml" },
   { outlet: "The Guardian", topics: ["markets"], url: "https://www.theguardian.com/business/rss" },
   { outlet: "NYT", topics: ["markets"], url: "https://rss.nytimes.com/services/xml/rss/nyt/Business.xml" },
   // Law / justice
   { outlet: "The Guardian", topics: ["law"], url: "https://www.theguardian.com/law/rss" },
   // Science
-  { outlet: "BBC", topics: ["science"], url: "http://feeds.bbci.co.uk/news/science_and_environment/rss.xml" },
+  { outlet: "BBC", topics: ["science"], url: "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml" },
   { outlet: "The Guardian", topics: ["science"], url: "https://www.theguardian.com/science/rss" },
   { outlet: "NYT", topics: ["science"], url: "https://rss.nytimes.com/services/xml/rss/nyt/Science.xml" },
   // Health
   { outlet: "NYT", topics: ["health"], url: "https://rss.nytimes.com/services/xml/rss/nyt/Health.xml" },
   { outlet: "NPR", topics: ["health"], url: "https://feeds.npr.org/1128/rss.xml" },
   // Sports
-  { outlet: "BBC", topics: ["sports"], url: "http://feeds.bbci.co.uk/sport/rss.xml" },
+  { outlet: "BBC", topics: ["sports"], url: "https://feeds.bbci.co.uk/sport/rss.xml" },
   { outlet: "NYT", topics: ["sports"], url: "https://rss.nytimes.com/services/xml/rss/nyt/Sports.xml" },
   // Culture / entertainment
   { outlet: "The Guardian", topics: ["entertainment"], url: "https://www.theguardian.com/culture/rss" },
